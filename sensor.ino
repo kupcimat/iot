@@ -10,11 +10,11 @@
 DHT dht(DHTPIN, DHTTYPE);
 
 // declare constants
-const int delay_ms = 2000;
-
-// declare variables
-float humidity;
-float temperature;
+const int delay_ms = 10;
+// protocol constants
+const char message_delimiter = '\n';
+const String message_get_environment = "get environment";
+const String message_invalid = "invalid request";
 
 void setup()
 {
@@ -29,16 +29,31 @@ void setup()
 
 void loop()
 {
-  // read sensor values
-  humidity = dht.readHumidity();
-  temperature = dht.readTemperature();
+  if (Serial.available() > 0) {
+    String request = Serial.readStringUntil(message_delimiter);
+    String response = message_invalid;
 
-  // send sensor values
-  Serial.print("humidity=");
-  Serial.print(humidity);
-  Serial.print(";temperature=");
-  Serial.println(temperature);
+    if (request == message_get_environment) {
+      response = getEnvironment();
+    }
+
+    Serial.println(response);
+  }
 
   // wait before next read
   delay(delay_ms);
+}
+
+String getEnvironment()
+{
+  // read sensor values
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
+
+  // return sensor values
+  String result = "humidity=";
+  result += humidity;
+  result += ";temperature=";
+  result += temperature;
+  return result;
 }

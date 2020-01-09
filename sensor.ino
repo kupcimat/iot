@@ -1,7 +1,7 @@
 // include adafruit DHT sensor library
 #include <DHT.h>
 
-#define DHTPIN  2     // DHT sensor data pin
+#define DHTPIN  12    // DHT sensor data pin
 #define DHTTYPE DHT22 // DHT sensor type
 
 // declare DHT sensor
@@ -16,10 +16,16 @@ const String message_ok              = "ok";
 const String message_invalid         = "invalid request";
 const String message_get_environment = "getEnvironment";
 const String message_set_digit       = "setDigit";
+const String message_set_color       = "setColor";
 
 // display constants            0   1   2    3    4   5   6    7    8    9
 const byte encodedDigits[] = {119, 96, 59, 121, 108, 93, 95, 112, 127, 125};
-const byte segmentPins[]   = {3, 4, 5, 6, 7, 8, 9, 10};
+const byte segmentPins[]   = {2, 3, 4, 5, 6, 7, 8, 9};
+
+// rgb led constants
+const byte redPin   = 13;
+const byte greenPin = 11;
+const byte bluePin  = 10;
 
 void setup()
 {
@@ -32,6 +38,11 @@ void setup()
   pinMode(segmentPins[5], OUTPUT);
   pinMode(segmentPins[6], OUTPUT);
   pinMode(segmentPins[7], OUTPUT);
+
+  // initialize rgb led
+  pinMode(redPin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  pinMode(bluePin, OUTPUT);
 
   // initialize DHT sensor
   dht.begin();
@@ -57,6 +68,11 @@ void loop()
       displayDigit(digit.toInt());
       response = message_ok;
     }
+    if (request.startsWith(message_set_color)) {
+      String color = request.substring(message_set_color.length());
+      displayColor(color.toInt());
+      response = message_ok;
+    }
 
     Serial.println(response);
   }
@@ -79,7 +95,7 @@ String getEnvironment()
   return result;
 }
 
-void displayDigit(int digit) {
+void displayDigit(long digit) {
   byte singleDigit = digit % 10;
   byte encodedDigit = encodedDigits[singleDigit];
   if (digit > 9) {
@@ -93,4 +109,14 @@ void displayDigit(int digit) {
       digitalWrite(segmentPins[i], HIGH); // turn off segment
     }
   }
+}
+
+void displayColor(long color) {
+  byte red = (color >> 16) & 0xFF;
+  byte green = (color >> 8) & 0xFF;
+  byte blue = color & 0xFF;
+
+  analogWrite(redPin, red);
+  analogWrite(greenPin, green);
+  analogWrite(bluePin, blue);
 }

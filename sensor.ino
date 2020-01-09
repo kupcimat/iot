@@ -62,13 +62,13 @@ void loop()
 
     if (request.equals(message_get_environment)) {
       response = getEnvironment();
-    }
-    if (request.startsWith(message_set_digit)) {
+
+    } else if (request.startsWith(message_set_digit)) {
       String digit = request.substring(message_set_digit.length());
       displayDigit(digit.toInt());
       response = message_ok;
-    }
-    if (request.startsWith(message_set_color)) {
+
+    } else if (request.startsWith(message_set_color)) {
       String color = request.substring(message_set_color.length());
       displayColor(color.toInt());
       response = message_ok;

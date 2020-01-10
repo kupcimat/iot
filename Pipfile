@@ -1,0 +1,16 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+httpie = "*"
+
+[packages]
+pyserial = "*"
+pyyaml = "*"
+tornado = "*"
+webthing = "*"
+
+[requires]
+python_version = "3.8"

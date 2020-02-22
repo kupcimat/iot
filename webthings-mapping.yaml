@@ -4,3 +4,4 @@ webthings:
       title: "Test temperature"
       description: "Test temperature"
       provider: random-value-generator
+      update-interval: 60

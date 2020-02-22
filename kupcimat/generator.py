@@ -36,6 +36,14 @@ def generate_webthing(mapping):
             description=properties["description"],
             value=value
         ), update_task
+    if name == "humidity-sensor":
+        logging.debug("action=generate type=humidity-sensor id=%s", properties["id"])
+        return kupcimat.webthings.HumiditySensor(
+            uri_id=properties["id"],
+            title=properties["title"],
+            description=properties["description"],
+            value=value
+        ), update_task
     return None
 
 

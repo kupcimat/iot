@@ -6,7 +6,7 @@ import serial
 import kupcimat.util
 
 
-def random_value_generator():
+async def random_value_generator():
     return abs(35.0 * random.random())
 
 

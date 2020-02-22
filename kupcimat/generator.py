@@ -63,6 +63,8 @@ def generate_update_task(sensor_id, callback, callback_time, value):
             new_value = await asyncio.wait_for(execute_callback(callback), timeout=5)
         except asyncio.TimeoutError:
             logging.debug("action=update-value id=%s status=timeout", sensor_id)
+        except Exception as e:
+            logging.debug("action=update-value id=%s status=error exception=%s", sensor_id, e)
         else:
             value.notify_of_external_update(new_value)
             logging.debug("action=update-value id=%s status=success value=%s", sensor_id, new_value)
@@ -79,5 +81,4 @@ def generate_update_task(sensor_id, callback, callback_time, value):
 async def execute_callback(callback):
     if asyncio.iscoroutinefunction(callback):
         return await callback()
-    # TODO log exceptions from executor
     return await asyncio.get_running_loop().run_in_executor(executor=None, func=callback)

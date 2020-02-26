@@ -54,9 +54,9 @@ def deploy_server(ctx, host):
         "./kupcimat",
         "./webthings-server.py",
         "./webthings-mapping.yaml",
-        "Pipfile",
-        "Pipfile.lock",
-        "run-server.sh"
+        "./Pipfile",
+        "./Pipfile.lock",
+        "./run-server.sh"
     ]
     ctx.run(rsync(host, source=join(files), target="/home/pi/webthings-server"))
     with ssh_connection(host) as c:
@@ -66,12 +66,26 @@ def deploy_server(ctx, host):
             c.run(pipenv("clean"), pty=True)
 
 
+@task(help={"host": "Raspberry PI hostname or IP address"})
+def update_server(ctx, host):
+    """
+    Update webthings-server configuration on Raspberry PI.
+    """
+    ctx.run(rsync(host, source="./webthings-mapping.yaml", target="/home/pi/webthings-server"))
+    with ssh_connection(host) as c:
+        c.sudo(systemctl("restart", "webthings-server"), pty=True)
+
+
 def apt(*arguments: str) -> str:
     return f"apt {join(arguments)}"
 
 
 def pipenv(*arguments: str) -> str:
     return f"pipenv {join(arguments)}"
+
+
+def systemctl(*arguments: str) -> str:
+    return f"systemctl {join(arguments)}"
 
 
 def join(arguments: Iterable[str]) -> str:

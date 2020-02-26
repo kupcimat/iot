@@ -7,6 +7,7 @@ import webthing
 import yaml
 
 import kupcimat.providers
+import kupcimat.util
 import kupcimat.webthings
 
 
@@ -79,6 +80,6 @@ def generate_update_task(sensor_id, callback, callback_time, value):
 
 
 async def execute_callback(callback):
-    if asyncio.iscoroutinefunction(callback):
+    if asyncio.iscoroutinefunction(kupcimat.util.unwrap_partial(callback)):
         return await callback()
     return await asyncio.get_running_loop().run_in_executor(executor=None, func=callback)

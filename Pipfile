@@ -4,7 +4,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+fabric = "*"
 httpie = "*"
+invoke = "*"
 
 [packages]
 pyserial = "*"
@@ -13,4 +15,4 @@ tornado = "*"
 webthing = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.7"

@@ -50,14 +50,17 @@ def deploy_server(ctx, host):
     Deploy webthings-server to Raspberry PI.
     """
     files = [
+        "./config",
         "./kupcimat",
         "./webthings-server.py",
         "./webthings-mapping.yaml",
         "Pipfile",
-        "Pipfile.lock"
+        "Pipfile.lock",
+        "run-server.sh"
     ]
     ctx.run(rsync(host, source=join(files), target="/home/pi/webthings-server"))
     with ssh_connection(host) as c:
+        c.sudo("cp webthings-server/config/webthings-server.service /etc/systemd/system", pty=True)
         with c.cd("webthings-server"):
             c.run(pipenv("sync"), pty=True)
             c.run(pipenv("clean"), pty=True)

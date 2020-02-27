@@ -18,7 +18,7 @@ def setup_rpi(ctx, host):
 @task(help={"host": "Raspberry PI hostname or IP address"})
 def update_rpi(ctx, host):
     """
-    Update Raspberry PI packages. 
+    Update Raspberry PI packages.
     """
     with ssh_connection(host) as c:
         c.sudo(apt("update"), pty=True)

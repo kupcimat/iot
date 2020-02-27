@@ -26,6 +26,16 @@ def update_rpi(ctx, host):
         c.sudo(apt("clean"), pty=True)
 
 
+@task(help={"host": "Raspberry PI hostname or IP address"})
+def clean_logs(ctx, host):
+    """
+    Clean old system logs on Raspberry PI.
+    """
+    with ssh_connection(host) as c:
+        c.sudo("du -h /var/log/* | sort -hr", pty=True)
+        c.sudo("rm -f /var/log/syslog.*.gz", pty=True)
+
+
 @task(help={"host": "Raspberry PI hostname or IP address",
             "backup-dir": "Backup directory (optional)"})
 def backup_gateway(ctx, host, backup_dir="./backup"):
@@ -72,8 +82,17 @@ def update_server(ctx, host):
     Update webthings-server configuration on Raspberry PI.
     """
     ctx.run(rsync(host, source="./webthings-mapping.yaml", target="/home/pi/webthings-server"))
+    manage_server(ctx, host, action="restart")
+
+
+@task(help={"host": "Raspberry PI hostname or IP address",
+            "action": "Systemd command, e.g. start, stop"})
+def manage_server(ctx, host, action):
+    """
+    Manage webthings-server (e.g. start, stop) on Raspberry PI.
+    """
     with ssh_connection(host) as c:
-        c.sudo(systemctl("restart", "webthings-server"), pty=True)
+        c.sudo(systemctl(action, "webthings-server"), pty=True)
 
 
 def apt(*arguments: str) -> str:

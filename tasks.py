@@ -72,8 +72,17 @@ def update_server(ctx, host):
     Update webthings-server configuration on Raspberry PI.
     """
     ctx.run(rsync(host, source="./webthings-mapping.yaml", target="/home/pi/webthings-server"))
+    manage_server(ctx, host, action="restart")
+
+
+@task(help={"host": "Raspberry PI hostname or IP address",
+            "action": "Systemd command, e.g. start, stop"})
+def manage_server(ctx, host, action):
+    """
+    Manage webthings-server (e.g. start, stop) on Raspberry PI.
+    """
     with ssh_connection(host) as c:
-        c.sudo(systemctl("restart", "webthings-server"), pty=True)
+        c.sudo(systemctl(action, "webthings-server"), pty=True)
 
 
 def apt(*arguments: str) -> str:

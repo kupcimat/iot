@@ -26,6 +26,16 @@ def update_rpi(ctx, host):
         c.sudo(apt("clean"), pty=True)
 
 
+@task(help={"host": "Raspberry PI hostname or IP address"})
+def clean_logs(ctx, host):
+    """
+    Clean old system logs on Raspberry PI.
+    """
+    with ssh_connection(host) as c:
+        c.sudo("du -h /var/log/* | sort -hr", pty=True)
+        c.sudo("rm -f /var/log/syslog.*.gz", pty=True)
+
+
 @task(help={"host": "Raspberry PI hostname or IP address",
             "backup-dir": "Backup directory (optional)"})
 def backup_gateway(ctx, host, backup_dir="./backup"):

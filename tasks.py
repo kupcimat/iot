@@ -42,7 +42,9 @@ def backup_gateway(ctx, host, backup_dir="./backup"):
     """
     Backup webthings-gateway on Raspberry PI.
     """
-    ctx.run(rsync(host, source="/home/pi/.mozilla-iot/", target=backup_dir, remote_target=False))
+    ctx.run(rsync(host, source="/home/pi/.mozilla-iot", target=backup_dir, remote_target=False))
+    ctx.run(rsync(host, source="/home/pi/webthings-server/webthings-mapping.yaml", target=backup_dir,
+                  remote_target=False))
 
 
 @task(help={"host": "Raspberry PI hostname or IP address",
@@ -51,7 +53,9 @@ def restore_gateway(ctx, host, backup_dir="./backup"):
     """
     Restore webthings-gateway on Raspberry PI.
     """
-    ctx.run(rsync(host, source=f"{backup_dir}/", target="/home/pi/.mozilla-iot", remote_target=True))
+    ctx.run(rsync(host, source=f"{backup_dir}/.mozilla-iot", target="/home/pi", remote_target=True))
+    ctx.run(rsync(host, source=f"{backup_dir}/webthings-mapping.yaml", target="/home/pi/webthings-server",
+                  remote_target=True))
 
 
 @task(help={"host": "Raspberry PI hostname or IP address"})

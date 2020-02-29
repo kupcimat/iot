@@ -70,10 +70,11 @@ def deploy_server(ctx, host):
     ]
     ctx.run(rsync(host, source=join(files), target="/home/pi/webthings-server"))
     with ssh_connection(host) as c:
-        c.sudo("cp webthings-server/config/webthings-server.service /etc/systemd/system", pty=True)
         with c.cd("webthings-server"):
             c.run(pipenv("sync"), pty=True)
             c.run(pipenv("clean"), pty=True)
+        c.sudo("cp webthings-server/config/webthings-server.service /etc/systemd/system", pty=True)
+    manage_server(ctx, host, action="enable")
 
 
 @task(help={"host": "Raspberry PI hostname or IP address"})

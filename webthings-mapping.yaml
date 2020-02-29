@@ -1,7 +1,0 @@
-webthings:
-  - temperature-sensor:
-      id: "urn:test:ro:temperature"
-      title: "Test temperature"
-      description: "Test temperature"
-      provider: random-value-generator
-      update-interval: 60

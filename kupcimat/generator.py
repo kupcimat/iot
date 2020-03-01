@@ -34,7 +34,7 @@ def generate_webthing(mapping):
         return kupcimat.webthings.TemperatureSensor(
             uri_id=properties["id"],
             title=properties["title"],
-            description=properties["description"],
+            description=properties.get("description", properties["title"]),
             value=value
         ), update_task
     if name == "humidity-sensor":
@@ -42,7 +42,7 @@ def generate_webthing(mapping):
         return kupcimat.webthings.HumiditySensor(
             uri_id=properties["id"],
             title=properties["title"],
-            description=properties["description"],
+            description=properties.get("description", properties["title"]),
             value=value
         ), update_task
     return None

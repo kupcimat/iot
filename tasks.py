@@ -29,11 +29,11 @@ def update_rpi(ctx, host):
 @task(help={"host": "Raspberry PI hostname or IP address"})
 def clean_logs(ctx, host):
     """
-    Clean old system logs on Raspberry PI.
+    Clean old logs on Raspberry PI.
     """
     with ssh_connection(host) as c:
-        c.sudo("du -h /var/log/* | sort -hr", pty=True)
-        c.sudo("rm -f /var/log/syslog.*.gz", pty=True)
+        c.sudo("du -h /var/log/*.[0-9].gz | sort -hr", pty=True)
+        c.sudo("rm -f /var/log/*.[0-9].gz", pty=True)
 
 
 @task(help={"host": "Raspberry PI hostname or IP address",

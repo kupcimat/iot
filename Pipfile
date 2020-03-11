@@ -8,6 +8,7 @@ fabric = "*"
 httpie = "*"
 invoke = "*"
 ipython = "*"
+pytest = "*"
 
 [packages]
 pyserial = "*"

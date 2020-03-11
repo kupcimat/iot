@@ -37,6 +37,16 @@ def clean_logs(ctx, host):
 
 
 @task(help={"host": "Raspberry PI hostname or IP address",
+            "app": "Application filter (optional)"})
+def show_logs(ctx, host, app="run-server"):
+    """
+    Show application system logs on Raspberry PI.
+    """
+    with ssh_connection(host) as c:
+        c.run(f"tail -f /var/log/syslog | grep {app}", pty=True)
+
+
+@task(help={"host": "Raspberry PI hostname or IP address",
             "backup-dir": "Backup directory (optional)"})
 def backup_gateway(ctx, host, backup_dir="./backup"):
     """

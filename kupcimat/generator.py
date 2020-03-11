@@ -45,6 +45,14 @@ def generate_webthing(mapping):
             description=properties.get("description", properties["title"]),
             value=value
         ), update_task
+    if name == "power-sensor":
+        logging.debug("action=generate type=power-sensor id=%s", properties["id"])
+        return kupcimat.webthings.PowerSensor(
+            uri_id=properties["id"],
+            title=properties["title"],
+            description=properties.get("description", properties["title"]),
+            value=value
+        ), update_task
     return None
 
 

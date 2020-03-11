@@ -88,7 +88,7 @@ def deploy_server(ctx, host):
             c.run(pipenv("sync"), pty=True)
             c.run(pipenv("clean"), pty=True)
         c.sudo("cp webthings-server/config/webthings-server.service /etc/systemd/system", pty=True)
-    manage_server(ctx, host, action="enable")
+    manage_service(ctx, host, action="enable")
 
 
 @task(help={"host": "Raspberry PI hostname or IP address"})
@@ -97,17 +97,18 @@ def update_server(ctx, host):
     Update webthings-server configuration on Raspberry PI.
     """
     ctx.run(rsync(host, source="./webthings-mapping.yaml", target="/home/pi/webthings-server"))
-    manage_server(ctx, host, action="restart")
+    manage_service(ctx, host, action="restart")
 
 
 @task(help={"host": "Raspberry PI hostname or IP address",
-            "action": "Systemd command, e.g. start, stop"})
-def manage_server(ctx, host, action):
+            "action": "Systemd command, e.g. start, stop",
+            "service": "Systemd service (optional)"})
+def manage_service(ctx, host, action, service="webthings-server"):
     """
-    Manage webthings-server (e.g. start, stop) on Raspberry PI.
+    Manage systemd service (e.g. start, stop) on Raspberry PI.
     """
     with ssh_connection(host) as c:
-        c.sudo(systemctl(action, "webthings-server"), pty=True)
+        c.sudo(systemctl(action, service), pty=True)
 
 
 def apt(*arguments: str) -> str:

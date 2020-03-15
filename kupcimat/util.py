@@ -19,3 +19,8 @@ def unwrap_partial(func):
     if isinstance(func, functools.partial):
         return unwrap_partial(func.func)
     return func
+
+
+def unwrap_dict(dictionary):
+    (name, properties), = dictionary.items()
+    return name, properties

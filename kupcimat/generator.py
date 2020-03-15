@@ -20,7 +20,7 @@ def generate_webthings(filename):
 
 def generate_webthing(mapping):
     # TODO error handling / mapping validation
-    (name, properties), = mapping.items()
+    name, properties = kupcimat.util.unwrap_dict(mapping)
     value = webthing.Value(0.0)
     update_task = generate_update_task(
         sensor_id=properties["id"],
@@ -61,7 +61,7 @@ def generate_webthing_provider(mapping):
     if type(mapping) is str:
         return kupcimat.providers.mapping[mapping]
     if type(mapping) is dict:
-        (name, properties), = mapping.items()
+        name, properties = kupcimat.util.unwrap_dict(mapping)
         return functools.partial(kupcimat.providers.mapping[name], **properties)
     return None
 

@@ -21,14 +21,23 @@ def generate_webthings(filename):
 def generate_webthing(mapping):
     # TODO error handling / mapping validation
     name, properties = kupcimat.util.unwrap_dict(mapping)
+    if "provider" in properties:
+        return generate_sensor(name, properties)
+    if "receiver" in properties:
+        return generate_device(name, properties)
+
+
+def generate_sensor(name, properties):
+    # TODO error handling / mapping validation
     value = webthing.Value(0.0)
     update_task = generate_update_task(
         sensor_id=properties["id"],
-        callback=generate_webthing_provider(properties["provider"]),
+        callback=generate_webthing_function(properties["provider"]),
         callback_time=properties["update-interval"],
         value=value
     )
 
+    # TODO can we get rid of duplication here?
     if name == "temperature-sensor":
         logging.debug("action=generate type=temperature-sensor id=%s", properties["id"])
         return kupcimat.webthings.TemperatureSensor(
@@ -56,7 +65,25 @@ def generate_webthing(mapping):
     return None
 
 
-def generate_webthing_provider(mapping):
+def generate_device(name, properties):
+    # TODO error handling / mapping validation
+    receive_task = generate_receive_task(
+        sensor_id=properties["id"],
+        callback=generate_webthing_function(properties["receiver"])
+    )
+
+    if name == "rgb-light":
+        logging.debug("action=generate type=rgb-light id=%s", properties["id"])
+        return kupcimat.webthings.RGBLight(
+            uri_id=properties["id"],
+            title=properties["title"],
+            description=properties.get("description", properties["title"]),
+            value_receiver=receive_task
+        ), None
+    return None
+
+
+def generate_webthing_function(mapping):
     # TODO error handling / mapping validation
     if type(mapping) is str:
         return kupcimat.providers.mapping[mapping]
@@ -85,3 +112,24 @@ def generate_update_task(sensor_id, callback, callback_time, value):
             await asyncio.sleep(sleep_time)
 
     return periodic_callback
+
+
+def generate_receive_task(sensor_id, callback):
+    async def receive_value(value):
+        try:
+            expanded_callback = kupcimat.util.update_partial(callback, functools.partial(expand_template, value=value))
+            await asyncio.wait_for(kupcimat.util.wrap_async(expanded_callback), timeout=5)
+        except asyncio.TimeoutError:
+            logging.debug("action=receive-value id=%s status=timeout", sensor_id)
+        except Exception as e:
+            logging.debug("action=receive-value id=%s status=error exception=%s", sensor_id, e)
+        else:
+            logging.debug("action=receive-value id=%s status=success value=%s", sensor_id, value)
+
+    return receive_value
+
+
+def expand_template(template, value):
+    if type(template) is str:
+        return template.format(value)
+    return template

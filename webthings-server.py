@@ -9,8 +9,9 @@ from kupcimat.util import execute_async
 def run_server():
     webthings = generate_webthings("webthings-mapping.yaml")
     things = [thing for thing, _ in webthings]
-    update_tasks = [execute_async(task()) for _, task in webthings]
+    update_tasks = [execute_async(task()) for _, task in webthings if task is not None]
 
+    # TODO don't use docker hostname for production
     server = WebThingServer(things=MultipleThings(things, name="home"),
                             port=8888,
                             hostname="host.docker.internal")

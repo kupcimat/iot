@@ -6,8 +6,7 @@ from kupcimat.util import unwrap_dict, unwrap_partial
 
 
 def test_unwrap_partial():
-    def func(x, y, z):
-        pass
+    def func(x, y, z): pass
 
     partial1_func = functools.partial(func, 1)
     partial2_func = functools.partial(partial1_func, 2)

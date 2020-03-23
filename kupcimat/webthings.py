@@ -1,4 +1,13 @@
-from webthing import Property, Thing
+from webthing import Property, Thing, Value
+
+import kupcimat.util
+
+
+def create_value_forwarder(value_receiver, value_converter):
+    def value_forwarder(value):
+        kupcimat.util.execute_async(value_receiver(value_converter(value)))
+
+    return value_forwarder
 
 
 class TemperatureSensor(Thing):
@@ -55,3 +64,40 @@ class PowerSensor(MultiLevelSensor):
 
     def __init__(self, uri_id, title, description, value):
         MultiLevelSensor.__init__(self, uri_id, title, description, value, "Power", "The current power in %")
+
+
+class RGBLight(Thing):
+    """A generic RGB light."""
+
+    def __init__(self, uri_id, title, description, value_receiver):
+        Thing.__init__(self, uri_id, title, ["Light"], description)
+
+        self.add_property(
+            Property(thing=self,
+                     name="switch",
+                     value=Value(
+                         False,
+                         create_value_forwarder(value_receiver, lambda x: 0xffffff if x else 0x000000)
+                     ),
+                     metadata={
+                         "title": "Switch",
+                         "description": "Light on/off switch",
+                         "@type": "OnOffProperty",
+                         "type": "boolean",
+                         "readOnly": False
+                     }))
+        self.add_property(
+            Property(thing=self,
+                     name="color",
+                     value=Value(
+                         "#000000",
+                         # TODO use hex value directly as arduino input?
+                         create_value_forwarder(value_receiver, lambda x: int(x[1:], 16))  # convert #0000ff to 255
+                     ),
+                     metadata={
+                         "title": "Color",
+                         "description": "Light rgb color",
+                         "@type": "ColorProperty",
+                         "type": "string",
+                         "readOnly": False
+                     }))

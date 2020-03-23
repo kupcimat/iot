@@ -69,7 +69,7 @@ def generate_webthing_provider(mapping):
 def generate_update_task(sensor_id, callback, callback_time, value):
     async def update_value():
         try:
-            new_value = await asyncio.wait_for(execute_callback(callback), timeout=5)
+            new_value = await asyncio.wait_for(kupcimat.util.wrap_async(callback), timeout=5)
         except asyncio.TimeoutError:
             logging.debug("action=update-value id=%s status=timeout", sensor_id)
         except Exception as e:
@@ -85,9 +85,3 @@ def generate_update_task(sensor_id, callback, callback_time, value):
             await asyncio.sleep(sleep_time)
 
     return periodic_callback
-
-
-async def execute_callback(callback):
-    if asyncio.iscoroutinefunction(kupcimat.util.unwrap_partial(callback)):
-        return await callback()
-    return await asyncio.get_running_loop().run_in_executor(executor=None, func=callback)

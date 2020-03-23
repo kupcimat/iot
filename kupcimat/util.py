@@ -30,3 +30,13 @@ def unwrap_dict(dictionary):
 def execute_async(coroutine):
     loop = asyncio.get_event_loop()
     return loop.create_task(coroutine)
+
+
+def wrap_async(function):
+    async def wrapper():
+        if asyncio.iscoroutinefunction(unwrap_partial(function)):
+            return await function()
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(executor=None, func=function)
+
+    return wrapper()

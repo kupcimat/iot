@@ -1,16 +1,15 @@
-import asyncio
 import logging
 
 from webthing import MultipleThings, WebThingServer
 
 from kupcimat.generator import generate_webthings
+from kupcimat.util import execute_async
 
 
 def run_server():
     webthings = generate_webthings("webthings-mapping.yaml")
-    loop = asyncio.get_event_loop()
     things = [thing for thing, _ in webthings]
-    update_tasks = [loop.create_task(update_task()) for _, update_task in webthings]
+    update_tasks = [execute_async(task()) for _, task in webthings]
 
     server = WebThingServer(things=MultipleThings(things, name="home"),
                             port=8888,

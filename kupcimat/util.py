@@ -1,3 +1,4 @@
+import asyncio
 import functools
 import logging
 import time
@@ -24,3 +25,8 @@ def unwrap_partial(func):
 def unwrap_dict(dictionary):
     (name, properties), = dictionary.items()
     return name, properties
+
+
+def execute_async(coroutine):
+    loop = asyncio.get_event_loop()
+    return loop.create_task(coroutine)

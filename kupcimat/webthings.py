@@ -3,11 +3,16 @@ from webthing import Property, Thing, Value
 import kupcimat.util
 
 
-def create_value_forwarder(value_receiver, value_converter):
+def create_value_forwarder(value_receiver, value_converter=None):
     def value_forwarder(value):
+        kupcimat.util.execute_async(value_receiver(value))
+
+    def value_forwarder_with_converter(value):
         kupcimat.util.execute_async(value_receiver(value_converter(value)))
 
-    return value_forwarder
+    if value_converter is None:
+        return value_forwarder
+    return value_forwarder_with_converter
 
 
 class TemperatureSensor(Thing):
@@ -90,7 +95,7 @@ class RGBLight(Thing):
             Property(thing=self,
                      name="color",
                      value=Value(
-                         "#000000",
+                         "#ffffff",
                          # TODO use hex value directly as arduino input?
                          create_value_forwarder(value_receiver, lambda x: int(x[1:], 16))  # convert #0000ff to 255
                      ),
@@ -99,5 +104,43 @@ class RGBLight(Thing):
                          "description": "Light rgb color",
                          "@type": "ColorProperty",
                          "type": "string",
+                         "readOnly": False
+                     }))
+
+
+class SegmentDisplay(Thing):
+    """A generic 7-segment display."""
+
+    def __init__(self, uri_id, title, description, value_receiver):
+        Thing.__init__(self, uri_id, title, ["MultiLevelSwitch"], description)
+
+        self.add_property(
+            Property(thing=self,
+                     name="switch",
+                     value=Value(
+                         False,
+                         create_value_forwarder(value_receiver, lambda x: 1 if x else 0)
+                     ),
+                     metadata={
+                         "title": "Switch",
+                         "description": "Display on/off switch",
+                         "@type": "OnOffProperty",
+                         "type": "boolean",
+                         "readOnly": False
+                     }))
+        self.add_property(
+            Property(thing=self,
+                     name="digit",
+                     value=Value(
+                         0,
+                         create_value_forwarder(value_receiver)
+                     ),
+                     metadata={
+                         "title": "Digit",
+                         "description": "Display digit",
+                         "@type": "LevelProperty",
+                         "type": "integer",
+                         "minimum": 0,
+                         "maximum": 19,
                          "readOnly": False
                      }))

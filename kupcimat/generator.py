@@ -80,6 +80,14 @@ def generate_device(name, properties):
             description=properties.get("description", properties["title"]),
             value_receiver=receive_task
         ), None
+    if name == "segment-display":
+        logging.debug("action=generate type=segment-display id=%s", properties["id"])
+        return kupcimat.webthings.SegmentDisplay(
+            uri_id=properties["id"],
+            title=properties["title"],
+            description=properties.get("description", properties["title"]),
+            value_receiver=receive_task
+        ), None
     return None
 
 

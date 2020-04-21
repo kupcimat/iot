@@ -82,7 +82,7 @@ class RGBLight(Thing):
                      name="switch",
                      value=Value(
                          False,
-                         create_value_forwarder(value_receiver, lambda x: 0xffffff if x else 0x000000)
+                         create_value_forwarder(value_receiver, lambda x: "on" if x else "off")
                      ),
                      metadata={
                          "title": "Switch",
@@ -119,7 +119,7 @@ class SegmentDisplay(Thing):
                      name="switch",
                      value=Value(
                          False,
-                         create_value_forwarder(value_receiver, lambda x: 1 if x else 0)
+                         create_value_forwarder(value_receiver, lambda x: "on" if x else "off")
                      ),
                      metadata={
                          "title": "Switch",

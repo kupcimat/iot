@@ -13,6 +13,8 @@ const int delay_ms = 10;
 // protocol constants
 const char   message_delimiter       = '\n';
 const String message_ok              = "ok";
+const String message_on              = "on";
+const String message_off             = "off";
 const String message_invalid         = "invalid request";
 const String message_get_environment = "getEnvironment";
 const String message_set_digit       = "setDigit";
@@ -26,6 +28,10 @@ const byte segmentPins[]   = {2, 3, 4, 5, 6, 7, 8, 9};
 const byte redPin   = 13;
 const byte greenPin = 11;
 const byte bluePin  = 10;
+
+// global variables
+long lastDigit = 0;
+long lastColor = 0xffffff;
 
 void setup()
 {
@@ -64,13 +70,27 @@ void loop()
       response = getEnvironment();
 
     } else if (request.startsWith(message_set_digit)) {
-      String digit = request.substring(message_set_digit.length());
-      displayDigit(digit.toInt());
+      String message = parseMessage(message_set_digit, request);
+      if (message.equals(message_off)) {
+        displayDigit(-1);
+      } else if (message.equals(message_on)) {
+        displayDigit(lastDigit);
+      } else {
+        displayDigit(message.toInt());
+        lastDigit = message.toInt();
+      }
       response = message_ok;
 
     } else if (request.startsWith(message_set_color)) {
-      String color = request.substring(message_set_color.length());
-      displayColor(color.toInt());
+      String message = parseMessage(message_set_color, request);
+      if (message.equals(message_off)) {
+        displayColor(0);
+      } else if (message.equals(message_on)) {
+        displayColor(lastColor);
+      } else {
+        displayColor(message.toInt());
+        lastColor = message.toInt();
+      }
       response = message_ok;
     }
 
@@ -79,6 +99,13 @@ void loop()
 
   // wait before next read
   delay(delay_ms);
+}
+
+String parseMessage(String prefix, String message)
+{
+  String result = message.substring(prefix.length());
+  result.trim();
+  return result;
 }
 
 String getEnvironment()
@@ -95,9 +122,13 @@ String getEnvironment()
   return result;
 }
 
-void displayDigit(long digit) {
+void displayDigit(long digit)
+{
   byte singleDigit = digit % 10;
   byte encodedDigit = encodedDigits[singleDigit];
+  if (digit < 0) {
+    encodedDigit = 0; // off
+  }
   if (digit > 9) {
     encodedDigit += 128; // overflow
   }
@@ -111,7 +142,8 @@ void displayDigit(long digit) {
   }
 }
 
-void displayColor(long color) {
+void displayColor(long color)
+{
   byte red = (color >> 16) & 0xFF;
   byte green = (color >> 8) & 0xFF;
   byte blue = color & 0xFF;

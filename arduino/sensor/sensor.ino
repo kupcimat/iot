@@ -31,6 +31,7 @@ const byte bluePin  = 10;
 
 // global variables
 long lastDigit = 0;
+long lastColor = 0xffffff;
 
 void setup()
 {
@@ -81,8 +82,15 @@ void loop()
       response = message_ok;
 
     } else if (request.startsWith(message_set_color)) {
-      String color = request.substring(message_set_color.length());
-      displayColor(color.toInt());
+      String message = parseMessage(message_set_color, request);
+      if (message.equals(message_off)) {
+        displayColor(0);
+      } else if (message.equals(message_on)) {
+        displayColor(lastColor);
+      } else {
+        displayColor(message.toInt());
+        lastColor = message.toInt();
+      }
       response = message_ok;
     }
 

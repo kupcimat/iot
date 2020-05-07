@@ -10,14 +10,16 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.8
       - name: Install Pipenv
         run: |
           python -m pip install --upgrade pip
           pip install pipenv
       - name: Install Dependencies
         run: |
-          pipenv sync --dev
+          pipenv install --dev
+          # TODO remove workaround when new pipenv is released
+          export PIPENV_PYUP_API_KEY=""
           pipenv check
       - name: Run Lint
         run: |

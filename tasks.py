@@ -91,7 +91,7 @@ def update_server(ctx, host):
     ctx.run(rsync(host, source="./webthings-mapping.yaml", target="/home/pi/"))
     with ssh_connection(host) as c:
         c.run("docker-compose restart", pty=True)
-        c.run("docker-compose images", pty=True)
+        c.run("docker-compose ps", pty=True)
 
 
 @task(help={"host": "Raspberry PI hostname or IP address"})

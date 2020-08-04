@@ -11,8 +11,9 @@ def setup_rpi(ctx, host):
     ctx.run(f"ssh-copy-id pi@{host}")
     with ssh_connection(host) as c:
         c.sudo("curl -sSL https://get.docker.com | sh", pty=True)
-        c.sudo("usermod -aG docker pi", pty=True)
         c.sudo("pip3 install docker-compose", pty=True)
+        c.sudo("usermod -aG docker pi", pty=True)
+        c.sudo("docker login", pty=True)
 
 
 @task(help={"host": "Raspberry PI hostname or IP address"})
@@ -23,7 +24,8 @@ def update_rpi(ctx, host):
     with ssh_connection(host) as c:
         c.sudo("apt update", pty=True)
         c.sudo("apt full-upgrade --yes", pty=True)
-        c.sudo("apt clean", pty=True)
+        c.sudo("apt auto-remove --yes", pty=True)
+        c.sudo("apt auto-clean", pty=True)
 
 
 @task(help={"host": "Raspberry PI hostname or IP address",
@@ -70,15 +72,26 @@ def push_image(ctx, tag="kupcimat/webthings-server"):
 )
 def deploy_server(ctx, host):
     """
-    Deploy webthings-server to Raspberry PI.
+    Deploy webthings-server on Raspberry PI.
     """
-    ctx.run(rsync(host, source="./docker-compose.yaml", target="/home/pi/webthings-server"))
+    ctx.run(rsync(host, source="./docker-compose.yaml", target="/home/pi/"))
     with ssh_connection(host) as c:
-        with c.cd("webthings-server"):
-            c.run("docker-compose pull", pty=True)
-            c.run("docker-compose down", pty=True)
-            c.run("docker-compose up --detach", pty=True)
-            c.run("docker-compose images", pty=True)
+        c.run("docker-compose pull", pty=True)
+        c.run("docker-compose down", pty=True)
+        c.run("docker-compose up --detach", pty=True)
+        c.run("docker-compose images", pty=True)
+
+
+@task(help={"host": "Raspberry PI hostname or IP address"})
+def update_server(ctx, host):
+    """
+    Update webthings-server configuration on Raspberry PI.
+    """
+    # TODO mount config volume instead of adding to image
+    ctx.run(rsync(host, source="./webthings-mapping.yaml", target="/home/pi/"))
+    with ssh_connection(host) as c:
+        c.run("docker-compose restart", pty=True)
+        c.run("docker-compose images", pty=True)
 
 
 @task(help={"host": "Raspberry PI hostname or IP address"})
@@ -87,8 +100,7 @@ def show_logs(ctx, host):
     Show webthings-server logs on Raspberry PI.
     """
     with ssh_connection(host) as c:
-        with c.cd("webthings-server"):
-            c.run("docker-compose logs", pty=True)
+        c.run("docker-compose logs", pty=True)
 
 
 def ssh_connection(host: str) -> Connection:

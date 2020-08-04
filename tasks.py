@@ -1,5 +1,3 @@
-from typing import Iterable
-
 from fabric import Connection
 from invoke import task
 
@@ -12,7 +10,9 @@ def setup_rpi(ctx, host):
     """
     ctx.run(f"ssh-copy-id pi@{host}")
     with ssh_connection(host) as c:
-        c.sudo(apt("-y", "install", "pipenv"), pty=True)
+        c.sudo("curl -sSL https://get.docker.com | sh", pty=True)
+        c.sudo("usermod -aG docker pi", pty=True)
+        c.sudo("pip3 install docker-compose", pty=True)
 
 
 @task(help={"host": "Raspberry PI hostname or IP address"})
@@ -21,29 +21,9 @@ def update_rpi(ctx, host):
     Update Raspberry PI packages.
     """
     with ssh_connection(host) as c:
-        c.sudo(apt("update"), pty=True)
-        c.sudo(apt("-y", "full-upgrade"), pty=True)
-        c.sudo(apt("clean"), pty=True)
-
-
-@task(help={"host": "Raspberry PI hostname or IP address"})
-def clean_logs(ctx, host):
-    """
-    Clean old logs on Raspberry PI.
-    """
-    with ssh_connection(host) as c:
-        c.sudo("du -h /var/log/*.[0-9].gz | sort -hr", pty=True)
-        c.sudo("rm -f /var/log/*.[0-9].gz", pty=True)
-
-
-@task(help={"host": "Raspberry PI hostname or IP address",
-            "app": "Application filter (optional)"})
-def show_logs(ctx, host, app="run-server"):
-    """
-    Show application system logs on Raspberry PI.
-    """
-    with ssh_connection(host) as c:
-        c.run(f"tail -f /var/log/syslog | grep {app}", pty=True)
+        c.sudo("apt update", pty=True)
+        c.sudo("apt full-upgrade --yes", pty=True)
+        c.sudo("apt clean", pty=True)
 
 
 @task(help={"host": "Raspberry PI hostname or IP address",
@@ -68,63 +48,47 @@ def restore_gateway(ctx, host, backup_dir="./backup"):
                   remote_target=True))
 
 
-@task(help={"host": "Raspberry PI hostname or IP address"})
+@task(help={"tag": "Docker image name and tag (optional)"})
+def build_image(ctx, tag="kupcimat/webthings-server"):
+    """
+    Build webthings-server docker image locally.
+    """
+    ctx.run(f"docker build --tag {tag} .")
+
+
+@task(help={"tag": "Docker image name and tag (optional)"})
+def push_image(ctx, tag="kupcimat/webthings-server"):
+    """
+    Push webthings-server docker image to registry.
+    """
+    ctx.run(f"docker push {tag}")
+
+
+@task(
+    pre=[build_image, push_image],
+    help={"host": "Raspberry PI hostname or IP address"}
+)
 def deploy_server(ctx, host):
     """
     Deploy webthings-server to Raspberry PI.
     """
-    files = [
-        "./config",
-        "./kupcimat",
-        "./webthings-server.py",
-        "./webthings-mapping.yaml",
-        "./Pipfile",
-        "./Pipfile.lock",
-        "./run-server.sh"
-    ]
-    ctx.run(rsync(host, source=join(files), target="/home/pi/webthings-server"))
+    ctx.run(rsync(host, source="./docker-compose.yaml", target="/home/pi/webthings-server"))
     with ssh_connection(host) as c:
         with c.cd("webthings-server"):
-            c.run(pipenv("sync"), pty=True)
-            c.run(pipenv("clean"), pty=True)
-        c.sudo("cp webthings-server/config/webthings-server.service /etc/systemd/system", pty=True)
-    manage_service(ctx, host, action="enable")
+            c.run("docker-compose pull", pty=True)
+            c.run("docker-compose down", pty=True)
+            c.run("docker-compose up --detach", pty=True)
+            c.run("docker-compose images", pty=True)
 
 
 @task(help={"host": "Raspberry PI hostname or IP address"})
-def update_server(ctx, host):
+def show_logs(ctx, host):
     """
-    Update webthings-server configuration on Raspberry PI.
-    """
-    ctx.run(rsync(host, source="./webthings-mapping.yaml", target="/home/pi/webthings-server"))
-    manage_service(ctx, host, action="restart")
-
-
-@task(help={"host": "Raspberry PI hostname or IP address",
-            "action": "Systemd command, e.g. start, stop",
-            "service": "Systemd service (optional)"})
-def manage_service(ctx, host, action, service="webthings-server"):
-    """
-    Manage systemd service (e.g. start, stop) on Raspberry PI.
+    Show webthings-server logs on Raspberry PI.
     """
     with ssh_connection(host) as c:
-        c.sudo(systemctl(action, service), pty=True)
-
-
-def apt(*arguments: str) -> str:
-    return f"apt {join(arguments)}"
-
-
-def pipenv(*arguments: str) -> str:
-    return f"pipenv {join(arguments)}"
-
-
-def systemctl(*arguments: str) -> str:
-    return f"systemctl {join(arguments)}"
-
-
-def join(arguments: Iterable[str]) -> str:
-    return " ".join(arguments)
+        with c.cd("webthings-server"):
+            c.run("docker-compose logs", pty=True)
 
 
 def ssh_connection(host: str) -> Connection:
@@ -134,6 +98,6 @@ def ssh_connection(host: str) -> Connection:
 def rsync(host: str, source: str, target: str, remote_target: bool = True) -> str:
     options = ["--recursive", "--delete"]
     if remote_target:
-        return f"rsync {join(options)} {source} pi@{host}:{target}"
+        return f"rsync {' '.join(options)} {source} pi@{host}:{target}"
     else:
-        return f"rsync {join(options)} pi@{host}:{source} {target}"
+        return f"rsync {' '.join(options)} pi@{host}:{source} {target}"

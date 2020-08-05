@@ -74,7 +74,8 @@ def deploy_server(ctx, host):
     """
     Deploy webthings-server on Raspberry PI.
     """
-    ctx.run(rsync(host, source="./docker-compose.yaml", target="/home/pi/"))
+    files = ["./docker-compose.yaml", "./webthings-mapping.yaml"]
+    ctx.run(rsync(host, source=" ".join(files), target="/home/pi/"))
     with ssh_connection(host) as c:
         c.run("docker-compose pull", pty=True)
         c.run("docker-compose down", pty=True)
@@ -87,7 +88,6 @@ def update_server(ctx, host):
     """
     Update webthings-server configuration on Raspberry PI.
     """
-    # TODO mount config volume instead of adding to image
     ctx.run(rsync(host, source="./webthings-mapping.yaml", target="/home/pi/"))
     with ssh_connection(host) as c:
         c.run("docker-compose restart", pty=True)

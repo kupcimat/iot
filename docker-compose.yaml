@@ -4,5 +4,7 @@ services:
     image: kupcimat/webthings-server
     devices:
       - "/dev/serial/by-id/usb-Arduino_LLC_Arduino_Leonardo-if00:/dev/serial/arduino"
+    volumes:
+      - "/home/pi/webthings-mapping.yaml:/app/webthings-mapping.yaml"
     network_mode: host
     restart: always

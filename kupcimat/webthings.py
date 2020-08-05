@@ -43,7 +43,7 @@ class MultiLevelSensor(Thing):
 
         self.add_property(
             Property(thing=self,
-                     name="temperature",
+                     name=property_title.lower(),
                      value=value,
                      metadata={
                          "title": property_title,

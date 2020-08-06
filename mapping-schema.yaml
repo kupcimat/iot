@@ -7,11 +7,13 @@ sensor-props:
   title: str()
   provider: any(include('serial-reader'), include('atrea-reader'))
   update-interval: int()
+  description: str(required=False)
 
 control-props:
   id: str()
   title: str()
   receiver: any(include('serial-reader'))
+  description: str(required=False)
 
 # Sensors & Controls
 temperature-sensor:

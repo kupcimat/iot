@@ -10,6 +10,7 @@ import kupcimat.providers
 import kupcimat.util
 import kupcimat.webthings
 from kupcimat.validator import validate_yaml
+from kupcimat.webthings import HumiditySensor, PowerSensor, RGBLight, SegmentDisplay, TemperatureSensor
 
 MAPPING_SCHEMA_FILE = "mapping-schema.yaml"
 
@@ -38,32 +39,19 @@ def generate_sensor(name, properties):
         value=value
     )
 
-    # TODO can we get rid of duplication here?
-    if name == "temperature-sensor":
-        logging.debug("action=generate type=temperature-sensor id=%s", properties["id"])
-        return kupcimat.webthings.TemperatureSensor(
-            uri_id=properties["id"],
-            title=properties["title"],
-            description=properties.get("description", properties["title"]),
-            value=value
-        ), update_task
-    if name == "humidity-sensor":
-        logging.debug("action=generate type=humidity-sensor id=%s", properties["id"])
-        return kupcimat.webthings.HumiditySensor(
-            uri_id=properties["id"],
-            title=properties["title"],
-            description=properties.get("description", properties["title"]),
-            value=value
-        ), update_task
-    if name == "power-sensor":
-        logging.debug("action=generate type=power-sensor id=%s", properties["id"])
-        return kupcimat.webthings.PowerSensor(
-            uri_id=properties["id"],
-            title=properties["title"],
-            description=properties.get("description", properties["title"]),
-            value=value
-        ), update_task
-    return None
+    logging.debug("action=generate type=%s id=%s", name, properties["id"])
+    sensor_mapping = {
+        "temperature-sensor": TemperatureSensor,
+        "humidity-sensor": HumiditySensor,
+        "power-sensor": PowerSensor
+    }
+    sensor_props = {
+        "uri_id": properties["id"],
+        "title": properties["title"],
+        "description": properties.get("description", properties["title"]),
+        "value": value
+    }
+    return sensor_mapping[name](**sensor_props), update_task
 
 
 def generate_device(name, properties):
@@ -72,23 +60,18 @@ def generate_device(name, properties):
         callback=generate_webthing_function(properties["receiver"])
     )
 
-    if name == "rgb-light":
-        logging.debug("action=generate type=rgb-light id=%s", properties["id"])
-        return kupcimat.webthings.RGBLight(
-            uri_id=properties["id"],
-            title=properties["title"],
-            description=properties.get("description", properties["title"]),
-            value_receiver=receive_task
-        ), None
-    if name == "segment-display":
-        logging.debug("action=generate type=segment-display id=%s", properties["id"])
-        return kupcimat.webthings.SegmentDisplay(
-            uri_id=properties["id"],
-            title=properties["title"],
-            description=properties.get("description", properties["title"]),
-            value_receiver=receive_task
-        ), None
-    return None
+    logging.debug("action=generate type=%s id=%s", name, properties["id"])
+    device_mapping = {
+        "rgb-light": RGBLight,
+        "segment-display": SegmentDisplay
+    }
+    device_props = {
+        "uri_id": properties["id"],
+        "title": properties["title"],
+        "description": properties.get("description", properties["title"]),
+        "value_receiver": receive_task
+    }
+    return device_mapping[name](**device_props), None
 
 
 def generate_webthing_function(mapping):

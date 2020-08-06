@@ -9,17 +9,19 @@ import yaml
 import kupcimat.providers
 import kupcimat.util
 import kupcimat.webthings
+from kupcimat.validator import validate_yaml
+
+MAPPING_SCHEMA_FILE = "mapping-schema.yaml"
 
 
 def generate_webthings(filename):
-    # TODO error handling / mapping validation
+    validate_yaml(MAPPING_SCHEMA_FILE, filename)
     with open(filename, "r") as file:
         mapping = yaml.safe_load(file)
         return list(map(generate_webthing, mapping["webthings"]))
 
 
 def generate_webthing(mapping):
-    # TODO error handling / mapping validation
     name, properties = kupcimat.util.unwrap_dict(mapping)
     if "provider" in properties:
         return generate_sensor(name, properties)
@@ -28,7 +30,6 @@ def generate_webthing(mapping):
 
 
 def generate_sensor(name, properties):
-    # TODO error handling / mapping validation
     value = webthing.Value(0.0)
     update_task = generate_update_task(
         sensor_id=properties["id"],
@@ -66,7 +67,6 @@ def generate_sensor(name, properties):
 
 
 def generate_device(name, properties):
-    # TODO error handling / mapping validation
     receive_task = generate_receive_task(
         sensor_id=properties["id"],
         callback=generate_webthing_function(properties["receiver"])
@@ -92,7 +92,6 @@ def generate_device(name, properties):
 
 
 def generate_webthing_function(mapping):
-    # TODO error handling / mapping validation
     if type(mapping) is str:
         return kupcimat.providers.mapping[mapping]
     if type(mapping) is dict:

@@ -15,6 +15,7 @@ pyserial = "*"
 pyyaml = "*"
 tornado = "*"
 webthing = "*"
+yamale = "*"
 
 [requires]
 python_version = "3.8"

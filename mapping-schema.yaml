@@ -1,0 +1,46 @@
+templates: any(required=False)
+webthings: list(include('temperature-sensor'), include('humidity-sensor'), include('power-sensor'), include('rgb-light'), include('segment-display'))
+---
+# Common Properties
+sensor-props:
+  id: str()
+  title: str()
+  provider: any(include('serial-reader'), include('atrea-reader'))
+  update-interval: int()
+
+control-props:
+  id: str()
+  title: str()
+  receiver: any(include('serial-reader'))
+
+# Sensors & Controls
+temperature-sensor:
+  temperature-sensor: include('sensor-props')
+
+humidity-sensor:
+  humidity-sensor: include('sensor-props')
+
+power-sensor:
+  power-sensor: include('sensor-props')
+
+rgb-light:
+  rgb-light: include('control-props')
+
+segment-display:
+  segment-display: include('control-props')
+
+# Providers & Receivers
+serial-reader:
+  serial-reader: include('serial-reader-props')
+serial-reader-props:
+  port: str()
+  baudrate: int()
+  command: str()
+  regex: str(required=False)
+
+atrea-reader:
+  atrea-reader: include('atrea-reader-props')
+atrea-reader-props:
+  url: str()
+  sensor: str()
+  scale: num()

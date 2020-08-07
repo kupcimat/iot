@@ -8,6 +8,7 @@ RUN pipenv install
 
 # Copy application
 COPY kupcimat kupcimat
+COPY mapping-schema.yaml .
 COPY webthings-server.py .
 
 # Build production image

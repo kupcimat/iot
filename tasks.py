@@ -80,7 +80,7 @@ def deploy_server(ctx, host):
         c.run("docker-compose pull", pty=True)
         c.run("docker-compose down", pty=True)
         c.run("docker-compose up --detach", pty=True)
-        c.run("docker-compose images", pty=True)
+        c.run("docker-compose ps", pty=True)
 
 
 @task(help={"host": "Raspberry PI hostname or IP address"})
@@ -100,7 +100,7 @@ def show_logs(ctx, host):
     Show webthings-server logs on Raspberry PI.
     """
     with ssh_connection(host) as c:
-        c.run("docker-compose logs", pty=True)
+        c.run("docker-compose logs --follow --tail 50", pty=True)
 
 
 def ssh_connection(host: str) -> Connection:

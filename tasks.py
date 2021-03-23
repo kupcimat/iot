@@ -103,6 +103,23 @@ def show_logs(ctx, host):
         c.run("docker-compose logs --follow --tail 50", pty=True)
 
 
+@task
+def upgrade_deps(ctx):
+    """
+    Upgrade application and development dependencies.
+    """
+    ctx.run("pip-compile --generate-hashes requirements.in")
+    ctx.run("pip-compile --generate-hashes requirements-dev.in")
+
+
+@task
+def install_deps(ctx):
+    """
+    Install application and development dependencies.
+    """
+    ctx.run("pip-sync requirements.txt requirements-dev.txt")
+
+
 def ssh_connection(host: str) -> Connection:
     return Connection(f"pi@{host}")
 

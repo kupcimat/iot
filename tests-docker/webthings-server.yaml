@@ -1,0 +1,19 @@
+schemaVersion: 2.0.0
+
+metadataTest:
+  env:
+    - key: "PYTHONPATH"
+      value: "/app/site-packages"
+  entrypoint: []
+  cmd: ["python", "webthings-server.py"]
+
+fileExistenceTests:
+  - name: "mapping-schema.yaml"
+    path: "/app/mapping-schema.yaml"
+    shouldExist: true
+  - name: "webthings-server.py"
+    path: "/app/webthings-server.py"
+    shouldExist: true
+  - name: "site-packages"
+    path: "/app/site-packages"
+    shouldExist: true

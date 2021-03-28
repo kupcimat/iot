@@ -1,8 +1,6 @@
 name: Iot CI
 
 on:
-  push:
-    branches: [master]
   pull_request:
     branches: [master]
 
@@ -41,7 +39,7 @@ jobs:
           pytest
 
   build-docker:
-    name: Build docker image and run tests
+    name: Build image and run tests
     runs-on: ubuntu-latest
 
     steps:

@@ -25,7 +25,7 @@ def update_rpi(ctx, host):
         c.sudo("apt update", pty=True)
         c.sudo("apt full-upgrade --yes", pty=True)
         c.sudo("apt auto-remove --yes", pty=True)
-        c.sudo("apt auto-clean", pty=True)
+        c.sudo("apt clean", pty=True)
 
 
 @task(help={"host": "Raspberry PI hostname or IP address",
@@ -66,10 +66,7 @@ def push_image(ctx, tag="kupcimat/webthings-server"):
     ctx.run(f"docker push {tag}")
 
 
-@task(
-    pre=[build_image, push_image],
-    help={"host": "Raspberry PI hostname or IP address"}
-)
+@task(help={"host": "Raspberry PI hostname or IP address"})
 def deploy_server(ctx, host):
     """
     Deploy webthings-server on Raspberry PI.
@@ -125,7 +122,7 @@ def ssh_connection(host: str) -> Connection:
 
 
 def rsync(host: str, source: str, target: str, remote_target: bool = True) -> str:
-    options = ["--recursive", "--delete"]
+    options = ["--recursive", "--delete", "--copy-links"]
     if remote_target:
         return f"rsync {' '.join(options)} {source} pi@{host}:{target}"
     else:

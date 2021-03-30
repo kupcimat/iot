@@ -7,4 +7,5 @@ services:
     volumes:
       - "/home/pi/webthings-mapping.yaml:/app/webthings-mapping.yaml"
     network_mode: host
+    privileged: true
     restart: always

@@ -105,8 +105,8 @@ def upgrade_deps(ctx):
     """
     Upgrade application and development dependencies.
     """
-    ctx.run("pip-compile --generate-hashes requirements.in")
-    ctx.run("pip-compile --generate-hashes requirements-dev.in")
+    ctx.run("pip-compile --upgrade --generate-hashes requirements.in")
+    ctx.run("pip-compile --upgrade --generate-hashes requirements-dev.in")
 
 
 @task
